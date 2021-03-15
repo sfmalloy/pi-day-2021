@@ -30,14 +30,22 @@ partial_sum(int tid, long long N, int P)
 }
 
 int 
-main() 
+main(int argc, char* argv[]) 
 {
     unsigned long long N;
     int P;
-    std::cout << "iterations => ";
-    std::cin >> N;
-    std::cout << "threads    => ";
-    std::cin >> P;
+    if (argc != 3)
+    {
+        std::cout << "iterations => ";
+        std::cin >> N;
+        std::cout << "threads    => ";
+        std::cin >> P;
+    }
+    else
+    {
+        N = std::stoull(argv[1]);
+        P = std::stoi(argv[2]);
+    }
 
     std::vector<std::future<long double>> threads;
     threads.reserve(P);
