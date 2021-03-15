@@ -1,38 +1,39 @@
+/*
+ * Sean Malloy
+ * pi.cpp
+ * Multithreaded pi approximation calculator
+ */
+/****************************************************************************/
+// System includes
 #include <iostream>
 #include <future>
 #include <vector>
 #include <iomanip>
 #include <limits>
+#include <cmath>
 
-unsigned long long
-partition(int tid, unsigned long long N, int P)
-{
-    return static_cast<unsigned long long>(N) * tid / P;
-}
+/****************************************************************************/
+// Local includes
+#include "timer.hpp"
 
-long double
-partial_sum(int tid, unsigned long long N, int P)
-{
-    int sign = (tid + 1) % 2 == 0 ? -1 : 1;
-    auto begin = partition(tid, N, P);
-    auto end = partition(tid + 1, N, P);
-    long double sum = 0.0;
-    long double k = 2.0 * (begin + 1) - 1.0;
+/****************************************************************************/
+// Forward declarations/using statements
 
-    for (auto i = begin; i < end; ++i)
-    {
-        sum += sign / k;
-        k += 2;
-        sign *= -1;
-    }
+using ull_t = unsigned long long;
+using ld_t = long double;
 
-    return sum;
-}
+ull_t
+partition(int tid, ull_t N, int P);
+
+ld_t
+partial_sum_odd_fractions(int tid, ull_t N, int P);
+
+/****************************************************************************/
 
 int 
 main(int argc, char* argv[]) 
 {
-    unsigned long long N;
+    ull_t N;
     int P;
     if (argc != 3)
     {
@@ -47,16 +48,63 @@ main(int argc, char* argv[])
         P = std::stoi(argv[2]);
     }
 
-    std::vector<std::future<long double>> threads;
+    Timer timer;
+    timer.start();
+    std::vector<std::future<ld_t>> threads;
     threads.reserve(P);
-    for (int tid = 0; tid < P; ++tid)
-        threads.push_back(std::async(std::launch::async, partial_sum, tid, N, P));
+    for (int tid = 1; tid < P - 1; ++tid)
+        threads.push_back(std::async(std::launch::async, 
+                                     partial_sum_odd_fractions, 
+                                     tid, N, P));
     
-    long double sum = 0.0;
+    ld_t sum = partial_sum_odd_fractions(0, N, P);
+    
     for (auto& t : threads)
         sum += t.get();
-    
-    std::cout << std::setprecision(std::numeric_limits<long double>::digits10) << 4 * sum << '\n';
+    timer.stop();
+    std::cout << std::fixed << std::setprecision(16) 
+              << "actual = " << M_PI << '\n'
+              << "approx = " << 4 * sum << '\n';
+    std::cout << std::fixed << std::setprecision(3) 
+              << "time   = " << timer.elapsed() << " ms\n";
 
     return 0;
+}
+
+/****************************************************************************/
+
+ld_t
+partial_sum_odd_fractions(int tid, ull_t N, int P)
+{
+    ull_t begin = partition(tid, N, P);
+    ull_t end = partition(tid + 1, N, P);
+    ld_t sum = 0.0;
+    ld_t k = 2.0 * (begin + 1) - 1.0;
+
+    int sign = (tid + 1) % 2 == 0 ? -1 : 1;
+
+    for (ull_t i = begin; i < end; i += 2)
+    {
+        sum += sign / k;
+        k += 4;
+    }
+
+    sign *= -1;
+    k = 2.0 * (begin + 1) + 1.0;
+
+    for (ull_t i = begin + 1; i < end; i += 2)
+    {
+        sum += sign / k;
+        k += 4;
+    }
+
+    return sum;
+}
+
+/****************************************************************************/
+
+ull_t
+partition(int tid, ull_t N, int P)
+{
+    return static_cast<ull_t>(N * tid) / P;
 }
