@@ -17,8 +17,7 @@
 #include "timer.hpp"
 
 /****************************************************************************/
-// Forward declarations/using statements
-
+// Using statements/Forward declarations
 using ull_t = unsigned long long;
 using ld_t = long double;
 
