@@ -11,7 +11,7 @@ partition(int tid, unsigned long long N, int P)
 }
 
 long double
-partial_sum(int tid, long long N, int P)
+partial_sum(int tid, unsigned long long N, int P)
 {
     int sign = (tid + 1) % 2 == 0 ? -1 : 1;
     auto begin = partition(tid, N, P);
@@ -19,7 +19,7 @@ partial_sum(int tid, long long N, int P)
     long double sum = 0.0;
     long double k = 2.0 * (begin + 1) - 1.0;
 
-    for (unsigned long long i = begin; i < end; ++i)
+    for (auto i = begin; i < end; ++i)
     {
         sum += sign / k;
         k += 2;
