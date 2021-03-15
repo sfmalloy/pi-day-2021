@@ -1,5 +1,5 @@
 CXXFLAGS = -Wall -O3 -pthread
-pi: pi.cpp
+pi.out: pi.cpp
 
 clean:
-	rm -rf pi
+	rm -rf pi.out
