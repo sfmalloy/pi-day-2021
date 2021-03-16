@@ -52,9 +52,11 @@ main(int argc, char* argv[])
     std::vector<std::future<ld_t>> threads;
     threads.reserve(P);
     for (int tid = 1; tid < P - 1; ++tid)
+    {
         threads.push_back(std::async(std::launch::async, 
                                      partial_sum_odd_fractions, 
                                      tid, N, P));
+    }
     
     ld_t sum = partial_sum_odd_fractions(0, N, P);
     
